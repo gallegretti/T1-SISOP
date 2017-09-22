@@ -1,9 +1,9 @@
 /*-----------------------------------------------------------
-|    Trabalho Prático I										|
-|    Implementação de Biblioteca de Threads cthreads 17.2	|
-|    Diego Dasso Migotto 242243								|
-|    Gabriel Allegretti 000000								|
-|	 Lucas Corssac 000000									|
+|    Trabalho Prático I
+|    Implementação de Biblioteca de Threads cthreads 17.2
+|    Diego Dasso Migotto 242243
+|    Gabriel Allegretti 000000
+|    Lucas Corssac 000000
 -----------------------------------------------------------*/
 
 #include "../include/cthread.h"
