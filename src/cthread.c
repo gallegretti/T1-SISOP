@@ -1,6 +1,6 @@
 /*-----------------------------------------------------------
-|    Trabalho Pr√°tico I
-|    Implementa√ß√£o de Biblioteca de Threads cthreads 17.2
+|    Trabalho Pr·tico I
+|    ImplementaÁ„o de Biblioteca de Threads cthreads 17.2
 |    Diego Dasso Migotto 242243
 |    Gabriel Allegretti 242269
 |    Lucas Corssac 219820
@@ -41,7 +41,7 @@ void AssertIsInitialized()
     CreateFila2(ready);
     CreateFila2(blocked);
 
-    ///Futuramente necess√°rio inicializar alguma estrutura pros joins
+    ///Futuramente necess·rio inicializar alguma estrutura pros joins
 
     ///Inicializar contexto do escalonador, fazer funcao do escalonador
 
@@ -94,37 +94,37 @@ int cidentify (char *name, int size)
 
 int ccreate (void* (*start)(void*), void *arg, int prio)
 {
-    AssertIsInitialized();
+	AssertIsInitialized();
 	return -1;
 }
 
 int cyield(void)
 {
-    AssertIsInitialized();
+	AssertIsInitialized();
 	return -1;
 }
 
 int cjoin(int tid)
 {
-    AssertIsInitialized();
+	AssertIsInitialized();
 	return -1;
 }
 
 int csem_init(csem_t *sem, int count)
 {
-    AssertIsInitialized();
+	AssertIsInitialized();
 	return -1;
 }
 
 int cwait(csem_t *sem)
 {
-    AssertIsInitialized();
+	AssertIsInitialized();
 	return -1;
 }
 
 int csignal(csem_t *sem)
 {
-    AssertIsInitialized();
+	AssertIsInitialized();
 	return -1;
 }
 
