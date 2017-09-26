@@ -2,8 +2,8 @@
 |    Trabalho Prático I
 |    Implementação de Biblioteca de Threads cthreads 17.2
 |    Diego Dasso Migotto 242243
-|    Gabriel Allegretti 000000
-|    Lucas Corssac 000000
+|    Gabriel Allegretti 242269
+|    Lucas Corssac 219820
 -----------------------------------------------------------*/
 
 #include "../include/cthread.h"
@@ -18,13 +18,31 @@
 /**----------------------Variaveis----------------------**/
 /*-------------------------------------------------------*/
 
-char nomesLongo[77] = "\nDiego Migotto - 242243\nGabriel Allegretti - 000000\nLucas Corssac - 000000";
-char nomesCurto[49] = "\nDDasso242243\nGAllegretti000000\nLCorssac000000";
+char nomesLongo[77] = "\nDiego Migotto - 242243\nGabriel Allegretti - 242269\nLucas Corssac - 219820";
+char nomesCurto[49] = "\nDDasso242243\nGAllegretti242269\nLCorssac219820";
+
+int vaSetup = 0;
 
 /*-------------------------------------------------------*/
 /**-----------------Funcoes auxiliares------------------**/
 /*-------------------------------------------------------*/
 
+void faSetup()
+{
+
+    ///Criar filas de apto e bloqueado
+
+    ///Futuramente necessário inicializar alguma estrutura pros joins
+
+    ///Inicializar contexto do escalonador, fazer funcao do escalonador
+
+    ///Inicializar TCB da thread principal
+
+    vaSetup = 1;
+
+    return;
+
+}
 
 /*-------------------------------------------------------*/
 /**-----------------Funcoes principais------------------**/
@@ -33,7 +51,7 @@ char nomesCurto[49] = "\nDDasso242243\nGAllegretti000000\nLCorssac000000";
 int cidentify (char *name, int size)
 {
 	int i = 0;
-	
+
     if (size < 49)
     {
         return -1;
