@@ -1,6 +1,6 @@
 #
 # Makefile de cthread
-# 
+#
 
 CC=gcc
 LIB_DIR=./lib
@@ -25,7 +25,7 @@ movetoLib:
 
 identifyTest:
 	$(CC) -c -o identify.o $(TST_DIR)/identify.c
-	$(CC) -o $(TST_DIR)/identify.exe identify.o $(BIN_DIR)/cthread.o
+	$(CC) -o $(TST_DIR)/identify.exe identify.o $(BIN_DIR)/cthread.o $(BIN_DIR)/support.o
 
 clean:
 	rm -rf $(BIN_DIR)/cthread.o $(LIB_DIR)/libcthread.a

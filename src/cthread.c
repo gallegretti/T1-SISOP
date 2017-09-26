@@ -23,25 +23,36 @@ char nomesCurto[49] = "DDasso242243\nGAllegretti242269\nLCorssac219820\n";
 
 int vaSetup = 0;
 
+PFILA2 ready;
+PFILA2 blocked;
+TCB_t * main_tcb;
+
 /*-------------------------------------------------------*/
 /**-----------------Funcoes auxiliares------------------**/
 /*-------------------------------------------------------*/
 
-void faSetup()
+void AssertIsInitialized()
 {
-
+    if (!vaSetup)
+	{
+		return;
+	}
     ///Criar filas de apto e bloqueado
+    CreateFila2(ready);
+    CreateFila2(blocked);
 
     ///Futuramente necessário inicializar alguma estrutura pros joins
 
     ///Inicializar contexto do escalonador, fazer funcao do escalonador
 
     ///Inicializar TCB da thread principal
+    main_tcb = malloc(sizeof(TCB_t));
+    main_tcb->tid = 0;
+    main_tcb->state = PROCST_CRIACAO;
+    main_tcb->prio = 3;
+    getcontext(&main_tcb->context);
 
-    vaSetup = 1;
-
-    return;
-
+	vaSetup = 1;
 }
 
 /*-------------------------------------------------------*/
@@ -83,30 +94,38 @@ int cidentify (char *name, int size)
 
 int ccreate (void* (*start)(void*), void *arg, int prio)
 {
+    AssertIsInitialized();
 	return -1;
 }
 
 int cyield(void)
 {
+    AssertIsInitialized();
 	return -1;
 }
 
 int cjoin(int tid)
 {
+    AssertIsInitialized();
 	return -1;
 }
 
 int csem_init(csem_t *sem, int count)
 {
+    AssertIsInitialized();
 	return -1;
 }
 
 int cwait(csem_t *sem)
 {
+    AssertIsInitialized();
 	return -1;
 }
 
 int csignal(csem_t *sem)
 {
+    AssertIsInitialized();
 	return -1;
 }
+
+
