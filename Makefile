@@ -23,6 +23,10 @@ gloriousLib:
 movetoLib:
 	mv libcthread.a $(LIB_DIR)
 
+identifyTest:
+	$(CC) -c -o identify.o $(TST_DIR)/identify.c
+	$(CC) -o $(TST_DIR)/identify.exe identify.o $(BIN_DIR)/cthread.o
+
 clean:
 	rm -rf $(BIN_DIR)/cthread.o $(LIB_DIR)/libcthread.a
 

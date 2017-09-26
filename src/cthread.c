@@ -18,8 +18,8 @@
 /**----------------------Variaveis----------------------**/
 /*-------------------------------------------------------*/
 
-char nomesLongo[77] = "\nDiego Migotto - 242243\nGabriel Allegretti - 242269\nLucas Corssac - 219820";
-char nomesCurto[49] = "\nDDasso242243\nGAllegretti242269\nLCorssac219820";
+char nomesLongo[77] = "Diego Migotto - 242243\nGabriel Allegretti - 242269\nLucas Corssac - 219820\n";
+char nomesCurto[49] = "DDasso242243\nGAllegretti242269\nLCorssac219820\n";
 
 int vaSetup = 0;
 
