@@ -18,23 +18,24 @@
 /**----------------------Variaveis----------------------**/
 /*-------------------------------------------------------*/
 
-char nomesLongo[77] = "Diego Migotto - 242243\nGabriel Allegretti - 242269\nLucas Corssac - 219820\n";
-char nomesCurto[49] = "DDasso242243\nGAllegretti242269\nLCorssac219820\n";
+char long_names[77] = "Diego Migotto - 242243\nGabriel Allegretti - 242269\nLucas Corssac - 219820\n";
+char short_names[49] = "DDasso242243\nGAllegretti242269\nLCorssac219820\n";
 
-int vaSetup = 0;
+int va_setup = 0;
+int cur_tid = 0;
 
 PFILA2 ready;
 PFILA2 blocked;
 
 TCB_t * main_tcb;
 TCB_t * cur_tcb;
-ucontext_t escalonador;
+ucontext_t scheduler;
 
 /*-------------------------------------------------------*/
 /**-----------------Funcoes auxiliares------------------**/
 /*-------------------------------------------------------*/
 
-void Escalonador()
+void Scheduler()
 {
     ///Move TCB para terminados, futuramente necessário ver joins
     if (cur_tcb != NULL)
@@ -61,7 +62,7 @@ void Escalonador()
 
 void AssertIsInitialized()
 {
-    if (!vaSetup)
+    if (!va_setup)
 	{
 		return;
 	}
@@ -72,11 +73,11 @@ void AssertIsInitialized()
     ///Futuramente necessário inicializar alguma estrutura pros joins
 
     ///Inicializar contexto do escalonador
-    getcontext(&escalonador);
-    escalonador.uc_stack.ss_sp = malloc(MEMSIZE);
-    escalonador.uc_stack.ss_size = MEMSIZE;
-    escalonador.uc_link = &(main_tcb->context);
-    makecontext(&escalonador, (void (*)(void))Escalonador, 0);
+    getcontext(&scheduler);
+    scheduler.uc_stack.ss_sp = malloc(MEMSIZE);
+    scheduler.uc_stack.ss_size = MEMSIZE;
+    scheduler.uc_link = &(main_tcb->context);
+    makecontext(&scheduler, (void (*)(void))Scheduler, 0);
 
     ///Inicializar TCB da thread principal
     main_tcb = malloc(sizeof(TCB_t));
@@ -86,7 +87,14 @@ void AssertIsInitialized()
     cur_tcb = main_tcb;
 
     ///Fim da inicialização
-	vaSetup = 1;
+    cur_tid = 0;
+	va_setup = 1;
+}
+
+int GiveMeSomeCoolId()
+{
+    cur_tid++;
+    return cur_tid;
 }
 
 /*-------------------------------------------------------*/
@@ -109,7 +117,7 @@ int cidentify (char *name, int size)
     {
         for (i = 0; i < 49; i++)
         {
-            name[i] = nomesCurto[i];
+            name[i] = short_names[i];
         }
         for (i = 49; i < size; i++)
         {
@@ -120,7 +128,7 @@ int cidentify (char *name, int size)
 
     for (i = 0; i < 77; i++)
     {
-        name[i] = nomesLongo[i];
+        name[i] = long_names[i];
     }
 
     for (i = 77; i < size; i++)
