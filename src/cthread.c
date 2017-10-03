@@ -103,7 +103,6 @@ int GiveMeSomeCoolId()
 
 int cidentify (char *name, int size)
 {
-
     AssertIsInitialized();
 
 	int i = 0;
@@ -140,7 +139,35 @@ int cidentify (char *name, int size)
 int ccreate (void* (*start)(void*), void *arg, int prio)
 {
 	AssertIsInitialized();
-	return -1;
+
+	ucontext_t context;
+
+    if (getcontext(&context) == 0) {
+
+        ///Cria novo TCB
+        TCB_t* tcb = (TCB_t*) malloc(sizeof(TCB_t));
+        tcb->tid = GiveMeSomeCoolId();
+        tcb->state = PROCST_CRIACAO;
+        getcontext(&tcb->context);
+
+        ///Criacao do contexto
+        tcb->context.uc_stack.ss_sp = malloc(MEMSIZE);
+        tcb->context.uc_stack.ss_size = MEMSIZE;
+        tcb->context.uc_link = &scheduler;
+        makecontext(&(tcb->context), (void (*)(void)) start, 1, arg);
+
+        ///Coloca na fila de aptos
+        if (AppendFila2(ready, (void*) tcb) == 0)
+        {
+            tcb->state = PROCST_APTO;
+            return tcb->tid;
+        }
+        else
+            return -1;
+
+    } else
+        return -1;
+
 }
 
 int cyield(void)
