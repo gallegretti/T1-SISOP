@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ucontext.h>
-
+#define MEMSIZE 16*1024
 
 /*-------------------------------------------------------*/
 /**----------------------Variaveis----------------------**/
@@ -25,11 +25,39 @@ int vaSetup = 0;
 
 PFILA2 ready;
 PFILA2 blocked;
+
 TCB_t * main_tcb;
+TCB_t * cur_tcb;
+ucontext_t escalonador;
 
 /*-------------------------------------------------------*/
 /**-----------------Funcoes auxiliares------------------**/
 /*-------------------------------------------------------*/
+
+void Escalonador()
+{
+    ///Move TCB para terminados, futuramente necessário ver joins
+    if (cur_tcb != NULL)
+    {
+        cur_tcb->state = PROCST_TERMINO;
+        cur_tcb = NULL;
+    }
+
+    ///Pega primeiro TCB da fila de aptos
+    if (FirstFila2(ready) == 0)
+    {
+        cur_tcb = GetAtIteratorFila2(ready);
+        DeleteAtIteratorFila2(ready);
+    } else
+    {
+        return;
+    }
+
+    ///Executa proximo TCB
+    cur_tcb->state = PROCST_EXEC;
+    setcontext(&cur_tcb->context);
+
+}
 
 void AssertIsInitialized()
 {
@@ -43,15 +71,21 @@ void AssertIsInitialized()
 
     ///Futuramente necessário inicializar alguma estrutura pros joins
 
-    ///Inicializar contexto do escalonador, fazer funcao do escalonador
+    ///Inicializar contexto do escalonador
+    getcontext(&escalonador);
+    escalonador.uc_stack.ss_sp = malloc(MEMSIZE);
+    escalonador.uc_stack.ss_size = MEMSIZE;
+    escalonador.uc_link = &(main_tcb->context);
+    makecontext(&escalonador, (void (*)(void))Escalonador, 0);
 
     ///Inicializar TCB da thread principal
     main_tcb = malloc(sizeof(TCB_t));
     main_tcb->tid = 0;
     main_tcb->state = PROCST_CRIACAO;
-    main_tcb->prio = 3;
     getcontext(&main_tcb->context);
+    cur_tcb = main_tcb;
 
+    ///Fim da inicialização
 	vaSetup = 1;
 }
 
@@ -61,6 +95,9 @@ void AssertIsInitialized()
 
 int cidentify (char *name, int size)
 {
+
+    AssertIsInitialized();
+
 	int i = 0;
 
     if (size < 49)
