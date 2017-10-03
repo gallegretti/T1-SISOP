@@ -173,7 +173,18 @@ int ccreate (void* (*start)(void*), void *arg, int prio)
 int cyield(void)
 {
 	AssertIsInitialized();
-	return -1;
+
+    TCB_t* tcb = cur_tcb;
+    tcb->state = PROCST_APTO;
+
+    if (tcb->tid != 0)
+        AppendFila2(ready, (void*) tcb);
+
+    cur_tcb = NULL;
+
+    swapcontext(&tcb->context, &scheduler);
+
+    return 0;
 }
 
 int cjoin(int tid)
