@@ -22,10 +22,10 @@ char long_names[77] = "Diego Migotto - 242243\nGabriel Allegretti - 242269\nLuca
 char short_names[49] = "DDasso242243\nGAllegretti242269\nLCorssac219820\n";
 
 int va_setup = 0;
-int cur_tid = 0;
 
 PFILA2 ready;
 PFILA2 blocked;
+PFILA2 semaphores;
 
 TCB_t * main_tcb;
 TCB_t * cur_tcb;
@@ -44,18 +44,22 @@ void Scheduler()
         cur_tcb = NULL;
     }
 
+    ///TODO: Ordena fila em ordem decrescente de 'prio'
+
     ///Pega primeiro TCB da fila de aptos
     if (FirstFila2(ready) == 0)
     {
         cur_tcb = GetAtIteratorFila2(ready);
         DeleteAtIteratorFila2(ready);
-    } else
+    }
+    else
     {
         return;
     }
 
     ///Executa proximo TCB
     cur_tcb->state = PROCST_EXEC;
+    startTimer();
     setcontext(&cur_tcb->context);
 
 }
@@ -63,14 +67,15 @@ void Scheduler()
 void AssertIsInitialized()
 {
     if (!va_setup)
-	{
-		return;
+    {
+        return;
 	}
     ///Criar filas de apto e bloqueado
     CreateFila2(ready);
     CreateFila2(blocked);
 
-    ///Futuramente necessário inicializar alguma estrutura pros joins
+    ///Cria fila para os semaforos
+    CreateFila2(semaphores);
 
     ///Inicializar contexto do escalonador
     getcontext(&scheduler);
@@ -83,18 +88,18 @@ void AssertIsInitialized()
     main_tcb = malloc(sizeof(TCB_t));
     main_tcb->tid = 0;
     main_tcb->state = PROCST_CRIACAO;
+    main_tcb->prio = 0;
     getcontext(&main_tcb->context);
     cur_tcb = main_tcb;
 
     ///Fim da inicialização
-    cur_tid = 0;
-	va_setup = 1;
+    va_setup = 1;
 }
 
 int GiveMeSomeCoolId()
 {
-    cur_tid++;
-    return cur_tid;
+    static int cur_tid = 0;
+    return cur_tid++;
 }
 
 /*-------------------------------------------------------*/
@@ -105,7 +110,7 @@ int cidentify (char *name, int size)
 {
     AssertIsInitialized();
 
-	int i = 0;
+    int i = 0;
 
     if (size < 49)
     {
@@ -142,12 +147,14 @@ int ccreate (void* (*start)(void*), void *arg, int prio)
 
 	ucontext_t context;
 
-    if (getcontext(&context) == 0) {
+    if (getcontext(&context) == 0)
+    {
 
         ///Cria novo TCB
         TCB_t* tcb = (TCB_t*) malloc(sizeof(TCB_t));
         tcb->tid = GiveMeSomeCoolId();
         tcb->state = PROCST_CRIACAO;
+        tcb->prio = 0;
         getcontext(&tcb->context);
 
         ///Criacao do contexto
@@ -163,25 +170,35 @@ int ccreate (void* (*start)(void*), void *arg, int prio)
             return tcb->tid;
         }
         else
+        {
             return -1;
-
-    } else
+        }
+    }
+    else
+    {
         return -1;
-
+    }
 }
 
 int cyield(void)
 {
-	AssertIsInitialized();
+    AssertIsInitialized();
+    unsigned int time = stopTimer();
 
     TCB_t* tcb = cur_tcb;
     tcb->state = PROCST_APTO;
 
+    /// Soma-se o ultimo delta do tempo com o tempo total
+    tcb->prio += time;
+
+    /// Move para fila de ready
     if (tcb->tid != 0)
+    {
         AppendFila2(ready, (void*) tcb);
+    }
 
+    /// Troca para escalonador
     cur_tcb = NULL;
-
     swapcontext(&tcb->context, &scheduler);
 
     return 0;
