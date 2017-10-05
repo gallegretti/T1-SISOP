@@ -9,7 +9,6 @@
 
 ## TODO List ##
 
-#### Etapa 1 ####
 - [x] Relatório #1
 - [X] Relatório #2 
 - [ ] Relatório #3
@@ -27,7 +26,7 @@
 - [ ] Testes
 
 
-********README********
+## README
 
 O material de apoio fornecido pelos professores da disciplina é composto pelos seguintes diretórios e arquivos:
 
@@ -50,31 +49,31 @@ O material de apoio fornecido pelos professores da disciplina é composto pelos 
 
 ESTRUTURA DE DIRETÓRIOS E ARQUIVOS
 
-.
-└── cthread
-    ├── bin
-    │   └── support.o
-    ├── cthreads_2017-02.pdf
-    ├── exemplos
-    │   ├── barbeiro.c
-    │   ├── exemplo.c
-    │   ├── filosofos.c
-    │   ├── Makefile
-    │   ├── mandel.c
-    │   ├── prodcons.c
-    │   ├── series.c
-    │   ├── teste_vetor.c
-    │   └── testSupport.c
-    ├── include
-    │   ├── cdata.h
-    │   ├── cthread.h
-    │   └── support.h
-    ├── lib
-    ├── Makefile
-    ├── src
-    │   └── insert.c
-    ├── support.pdf
-    └── testes
+> .
+> └── cthread
+>     ├── bin
+>     │   └── support.o
+>     ├── cthreads_2017-02.pdf
+>     ├── exemplos
+>     │   ├── barbeiro.c
+>     │   ├── exemplo.c
+>     │   ├── filosofos.c
+>     │   ├── Makefile
+>     │   ├── mandel.c
+>     │   ├── prodcons.c
+>     │   ├── series.c
+>     │   ├── teste_vetor.c
+>     │   └── testSupport.c
+>     ├── include
+>     │   ├── cdata.h
+>     │   ├── cthread.h
+>     │   └── support.h
+>     ├── lib
+>     ├── Makefile
+>     ├── src
+>     │   └── insert.c
+>     ├── support.pdf
+>     └── testes
 
 7 directories, 17 files
 
