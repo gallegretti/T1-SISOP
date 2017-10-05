@@ -1,5 +1,33 @@
+# Cthread 17.2 #
+### Projeto da disciplina de Sistemas Operacionais (INF01142) 2017/2 ###
+### UFRGS - Instituto de Informática ##
+### Professor Alexandre Carissimi ###
+### Alunos: ###
+* Diego Dasso Migotto
+* Gabriel Allegretti
+* Lucas Corssac
 
-*******README********
+## TODO List ##
+
+#### Etapa 1 ####
+- [x] Relatório #1
+- [X] Relatório #2 
+- [ ] Relatório #3
+- [ ] Relatório #4
+- [ ] Relatório #5
+- [X] Func Inicialização
+- [X] Ccreate
+- [X] Cyield
+- [ ] Cjoin
+- [ ] Csem_init
+- [ ] Cwait
+- [ ] Csignal
+- [X] Cidentify
+- [ ] Debugging
+- [ ] Testes
+
+
+********README********
 
 O material de apoio fornecido pelos professores da disciplina é composto pelos seguintes diretórios e arquivos:
 
