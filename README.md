@@ -11,7 +11,7 @@
 
 - [x] Relatório #1
 - [X] Relatório #2 
-- [ ] Relatório #3
+- [X] Relatório #3
 - [ ] Relatório #4
 - [ ] Relatório #5
 - [X] Func Inicialização
