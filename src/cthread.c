@@ -26,6 +26,7 @@ int va_setup = 0;
 PFILA2 ready;
 PFILA2 blocked;
 PFILA2 semaphores;
+PFILA2 joins;
 
 TCB_t * main_tcb;
 TCB_t * cur_tcb;
@@ -76,6 +77,9 @@ void AssertIsInitialized()
 
     ///Cria fila para os semaforos
     CreateFila2(semaphores);
+
+    ///Cria fila para guardar quem deu join em quem
+    CreateFila2(joins);
 
     ///Inicializar contexto do escalonador
     getcontext(&scheduler);
@@ -207,7 +211,35 @@ int cyield(void)
 int cjoin(int tid)
 {
 	AssertIsInitialized();
-	return -1;
+
+	/// Erro se alguem já está esperando por essa thread
+	for (FirstFila2(joins); joins->it != joins->last; NextFila2(joins) )
+	{
+	    s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(joins);
+	    if (joinable->tid_target == tid)
+	    {
+	        return -1;
+	    }
+	}
+
+	/// Adiciona o join na lista
+	s_JOINABLE* joinable = (s_JOINABLE*) malloc(sizeof(s_JOINABLE));
+	joinable->tid_source = cur_tcb->tid;
+	joinable->tid_target = tid;
+	AppendFila2(joins, (void*) joinable);
+
+
+	/// Bloqueia essa thread
+    TCB_t* tcb = cur_tcb;
+    tcb->state = PROCST_BLOQ;
+    AppendFila2(blocked, (void*) tcb);
+
+
+    /// Troca para escalonador
+    cur_tcb = NULL;
+    swapcontext(&tcb->context, &scheduler);
+
+	return 0;
 }
 
 int csem_init(csem_t *sem, int count)
