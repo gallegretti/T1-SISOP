@@ -12,7 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ucontext.h>
+
 #define MEMSIZE 16*1024
+#define FOR_EACH_FILA2(fila) for (FirstFila2(fila); fila->it != fila->last; NextFila2(fila))
 
 /*-------------------------------------------------------*/
 /**----------------------Variaveis----------------------**/
@@ -32,15 +34,43 @@ TCB_t * main_tcb;
 TCB_t * cur_tcb;
 ucontext_t scheduler;
 
+
 /*-------------------------------------------------------*/
 /**-----------------Funcoes auxiliares------------------**/
 /*-------------------------------------------------------*/
 
 void Scheduler()
 {
-    ///Move TCB para terminados, futuramente necessário ver joins
+    ///Caso o thread tenha terminado
     if (cur_tcb != NULL)
     {
+        ///Vamos remover da lista de joins caso alguem esteja esperando por ele
+        FOR_EACH_FILA2(joins)
+        {
+            s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(joins);
+            /// Se encontrou
+            if (joinable->tid_target == cur_tcb->tid)
+            {
+                /// Remove dos joins
+                DeleteAtIteratorFila2(joins);
+
+                /// Encontra o que que estava bloqueado e muda para ready
+                FOR_EACH_FILA2(blocked)
+                {
+                    TCB_t* tcb = (TCB_t*)GetAtIteratorFila2(blocked);
+                    if (tcb->tid == joinable->tid_source)
+                    {
+                        DeleteAtIteratorFila2(blocked);
+                        AppendFila2(ready, (void *)tcb);
+                    }
+                }
+
+                /// Como um thread pode ser 'joinado' por apenas um outro thread, podemos terminar
+                break;
+            }
+        }
+
+        ///Move TCB para terminados
         cur_tcb->state = PROCST_TERMINO;
         cur_tcb = NULL;
     }
@@ -213,7 +243,7 @@ int cjoin(int tid)
 	AssertIsInitialized();
 
 	/// Erro se alguem já está esperando por essa thread
-	for (FirstFila2(joins); joins->it != joins->last; NextFila2(joins) )
+	FOR_EACH_FILA2(joins)
 	{
 	    s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(joins);
 	    if (joinable->tid_target == tid)
@@ -260,4 +290,6 @@ int csignal(csem_t *sem)
 	return -1;
 }
 
+#undef FOR_EACH_FILA2
+#undef MEMSIZE
 
