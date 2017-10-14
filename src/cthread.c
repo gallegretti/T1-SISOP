@@ -15,7 +15,6 @@
 
 #define MEMSIZE 16*1024
 #define FOR_EACH_FILA2(fila) for (FirstFila2(&fila); fila.it != fila.last; NextFila2(&fila))
-#define LOG(x) printf(x)
 /*-------------------------------------------------------*/
 /**----------------------Variaveis----------------------**/
 /*-------------------------------------------------------*/
@@ -97,13 +96,10 @@ void Scheduler()
 
 void AssertIsInitialized()
 {
-    //printf("AssertIsInitialized %d\n", va_setup);
     if (va_setup == 1)
     {
-        //printf("Return\n");
         return;
 	}
-	//printf("Inicializando");
     ///Criar filas de apto e bloqueado
     CreateFila2(&ready);
     CreateFila2(&blocked);
