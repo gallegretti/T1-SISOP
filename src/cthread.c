@@ -14,8 +14,8 @@
 #include <ucontext.h>
 
 #define MEMSIZE 16*1024
-#define FOR_EACH_FILA2(fila) for (FirstFila2(fila); fila->it != fila->last; NextFila2(fila))
-
+#define FOR_EACH_FILA2(fila) for (FirstFila2(&fila); fila.it != fila.last; NextFila2(&fila))
+#define LOG(x) printf(x)
 /*-------------------------------------------------------*/
 /**----------------------Variaveis----------------------**/
 /*-------------------------------------------------------*/
@@ -25,10 +25,10 @@ char short_names[49] = "DDasso242243\nGAllegretti242269\nLCorssac219820\n";
 
 int va_setup = 0;
 
-PFILA2 ready;
-PFILA2 blocked;
-PFILA2 semaphores;
-PFILA2 joins;
+FILA2 ready;
+FILA2 blocked;
+FILA2 semaphores;
+FILA2 joins;
 
 TCB_t * main_tcb;
 TCB_t * cur_tcb;
@@ -47,21 +47,21 @@ void Scheduler()
         ///Vamos remover da lista de joins caso alguem esteja esperando por ele
         FOR_EACH_FILA2(joins)
         {
-            s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(joins);
+            s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(&joins);
             /// Se encontrou
             if (joinable->tid_target == cur_tcb->tid)
             {
                 /// Remove dos joins
-                DeleteAtIteratorFila2(joins);
+                DeleteAtIteratorFila2(&joins);
 
                 /// Encontra o que que estava bloqueado e muda para ready
                 FOR_EACH_FILA2(blocked)
                 {
-                    TCB_t* tcb = (TCB_t*)GetAtIteratorFila2(blocked);
+                    TCB_t* tcb = (TCB_t*)GetAtIteratorFila2(&blocked);
                     if (tcb->tid == joinable->tid_source)
                     {
-                        DeleteAtIteratorFila2(blocked);
-                        AppendFila2(ready, (void *)tcb);
+                        DeleteAtIteratorFila2(&blocked);
+                        AppendFila2(&ready, (void *)tcb);
                     }
                 }
 
@@ -78,10 +78,10 @@ void Scheduler()
     ///TODO: Ordena fila em ordem decrescente de 'prio'
 
     ///Pega primeiro TCB da fila de aptos
-    if (FirstFila2(ready) == 0)
+    if (FirstFila2(&ready) == 0)
     {
-        cur_tcb = GetAtIteratorFila2(ready);
-        DeleteAtIteratorFila2(ready);
+        cur_tcb = GetAtIteratorFila2(&ready);
+        DeleteAtIteratorFila2(&ready);
     }
     else
     {
@@ -97,19 +97,22 @@ void Scheduler()
 
 void AssertIsInitialized()
 {
-    if (!va_setup)
+    //printf("AssertIsInitialized %d\n", va_setup);
+    if (va_setup == 1)
     {
+        //printf("Return\n");
         return;
 	}
+	//printf("Inicializando");
     ///Criar filas de apto e bloqueado
-    CreateFila2(ready);
-    CreateFila2(blocked);
+    CreateFila2(&ready);
+    CreateFila2(&blocked);
 
     ///Cria fila para os semaforos
-    CreateFila2(semaphores);
+    CreateFila2(&semaphores);
 
     ///Cria fila para guardar quem deu join em quem
-    CreateFila2(joins);
+    CreateFila2(&joins);
 
     ///Inicializar contexto do escalonador
     getcontext(&scheduler);
@@ -198,7 +201,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio)
         makecontext(&(tcb->context), (void (*)(void)) start, 1, arg);
 
         ///Coloca na fila de aptos
-        if (AppendFila2(ready, (void*) tcb) == 0)
+        if (AppendFila2(&ready, (void*) tcb) == 0)
         {
             tcb->state = PROCST_APTO;
             return tcb->tid;
@@ -228,7 +231,7 @@ int cyield(void)
     /// Move para fila de ready
     if (tcb->tid != 0)
     {
-        AppendFila2(ready, (void*) tcb);
+        AppendFila2(&ready, (void*) tcb);
     }
 
     /// Troca para escalonador
@@ -245,7 +248,7 @@ int cjoin(int tid)
 	/// Erro se alguem já está esperando por essa thread
 	FOR_EACH_FILA2(joins)
 	{
-	    s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(joins);
+	    s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(&joins);
 	    if (joinable->tid_target == tid)
 	    {
 	        return -1;
@@ -256,13 +259,13 @@ int cjoin(int tid)
 	s_JOINABLE* joinable = (s_JOINABLE*) malloc(sizeof(s_JOINABLE));
 	joinable->tid_source = cur_tcb->tid;
 	joinable->tid_target = tid;
-	AppendFila2(joins, (void*) joinable);
+	AppendFila2(&joins, (void*) joinable);
 
 
 	/// Bloqueia essa thread
     TCB_t* tcb = cur_tcb;
     tcb->state = PROCST_BLOQ;
-    AppendFila2(blocked, (void*) tcb);
+    AppendFila2(&blocked, (void*) tcb);
 
 
     /// Troca para escalonador
