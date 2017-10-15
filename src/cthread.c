@@ -102,7 +102,7 @@ void AssertIsInitialized()
     if (va_setup == 1)
     {
         return;
-	}
+    }
     ///Criar filas de apto e bloqueado
     CreateFila2(&ready);
     CreateFila2(&blocked);
@@ -215,9 +215,9 @@ int cidentify (char *name, int size)
 
 int ccreate (void* (*start)(void*), void *arg, int prio)
 {
-	AssertIsInitialized();
+    AssertIsInitialized();
 
-	ucontext_t context;
+    ucontext_t context;
 
     if (getcontext(&context) == 0)
     {
@@ -282,23 +282,23 @@ int cyield(void)
 
 int cjoin(int tid)
 {
-	AssertIsInitialized();
+    AssertIsInitialized();
 
-	/// Erro se alguem já está esperando por essa thread
-	FOR_EACH_FILA2(joins)
-	{
-	    s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(&joins);
-	    if (joinable->tid_target == tid)
-	    {
-	        return -1;
-	    }
-	}
+    /// Erro se alguem já está esperando por essa thread
+    FOR_EACH_FILA2(joins)
+    {
+        s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(&joins);
+        if (joinable->tid_target == tid)
+        {
+            return -1;
+        }
+    }
 
-	/// Adiciona o join na lista
-	s_JOINABLE* joinable = (s_JOINABLE*) malloc(sizeof(s_JOINABLE));
-	joinable->tid_source = cur_tcb->tid;
-	joinable->tid_target = tid;
-	AppendFila2(&joins, (void*) joinable);
+    /// Adiciona o join na lista
+    s_JOINABLE* joinable = (s_JOINABLE*) malloc(sizeof(s_JOINABLE));
+    joinable->tid_source = cur_tcb->tid;
+    joinable->tid_target = tid;
+    AppendFila2(&joins, (void*) joinable);
 
 
     /// Bloqueia essa thread
@@ -311,33 +311,33 @@ int cjoin(int tid)
     cur_tcb = NULL;
     swapcontext(&tcb->context, &scheduler);
 
-	return 0;
+    return 0;
 }
 
 int csem_init(csem_t *sem, int count)
 {
-	AssertIsInitialized();
+    AssertIsInitialized();
 
 
-        /// inicializa o semáfaro
-        sem->count = count; /// quantidade de recurso disponível
-        sem->fila = malloc(sizeof(FILA2));
+    /// inicializa o semáfaro
+    sem->count = count; /// quantidade de recurso disponível
+    sem->fila = malloc(sizeof(FILA2));
 
-        int error = CreateFila2(sem->fila); /// inicializa a fila
+    int error = CreateFila2(sem->fila); /// inicializa a fila
 
-        if (error)
-        {
-                printf("error initializing semaphore\n");
-                return -1;
-        }
+    if (error)
+    {
+        printf("error initializing semaphore\n");
+        return -1;
+    }
 
 
-	return 0;
+    return 0;
 }
 
 int cwait(csem_t *sem)
 {
-	AssertIsInitialized();
+    AssertIsInitialized();
 
     ///subtrai um dos recursos do semáfaro e continua
     sem->count--;
@@ -364,13 +364,13 @@ int cwait(csem_t *sem)
     }
     /// se tiver continua normalmente
 
-	return 0;
+    return 0;
 }
 
 int csignal(csem_t *sem)
 {
-	AssertIsInitialized();
-	return -1;
+    AssertIsInitialized();
+    return -1;
 }
 
 #undef FOR_EACH_FILA2
