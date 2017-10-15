@@ -288,7 +288,7 @@ int cjoin(int tid)
 	AppendFila2(&joins, (void*) joinable);
 
 
-	/// Bloqueia essa thread
+    /// Bloqueia essa thread
     TCB_t* tcb = cur_tcb;
     tcb->state = PROCST_BLOQ;
     AppendFila2(&blocked, (void*) tcb);
@@ -304,13 +304,54 @@ int cjoin(int tid)
 int csem_init(csem_t *sem, int count)
 {
 	AssertIsInitialized();
-	return -1;
+
+
+        /// inicializa o semáfaro
+        sem->count = count; /// quantidade de recurso disponível
+        sem->fila = malloc(sizeof(FILA2));
+        
+        int error = CreateFila2(sem->fila); /// inicializa a fila
+        
+        if (error)
+        {
+                printf("error initializing semaphore\n");
+                return -1;
+        }
+
+
+	return 0;
 }
 
 int cwait(csem_t *sem)
 {
 	AssertIsInitialized();
-	return -1;
+
+        ///subtrai um dos recursos do semáfaro e continua
+        sem->count --;
+        
+        /// Verifica se o semáfaro tem recursos recursos disponíveis
+        if (sem->count < 0)
+        {
+                /// se não tiver:
+
+                /// Bloqueia essa thread
+                TCB_t* tcb = cur_tcb;
+                tcb->state = PROCST_BLOQ;
+                AppendFila2(&blocked, (void*) tcb);
+
+                /// Coloca na fila do semafaro
+                AppendFila2(sem->fila, (void *) tcb);
+
+                /// Troca para escalonador
+                cur_tcb = NULL;
+                swapcontext(&tcb->context, &scheduler);
+
+                return 0;
+
+        }
+        /// se tiver continua normalmente        
+
+	return 0;
 }
 
 int csignal(csem_t *sem)
