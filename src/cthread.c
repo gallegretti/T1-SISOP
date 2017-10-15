@@ -24,7 +24,12 @@ char short_names[49] = "DDasso242243\nGAllegretti242269\nLCorssac219820\n";
 
 int va_setup = 0;
 
+/// Vamos manter essa fila ordenada de maneira DECRESCENTE de prioridade, ou seja,
+/// as thread com prioridades de valor numerico MENOR estarao no inicio da lista,
+/// enquanto as com valor numerico MAIOR estarao no final da mesma.
+/// Lembrando que o valor numerico representa o tempo total que a thread executou
 FILA2 ready;
+
 FILA2 blocked;
 FILA2 semaphores;
 FILA2 joins;
@@ -73,8 +78,6 @@ void Scheduler()
         cur_tcb->state = PROCST_TERMINO;
         cur_tcb = NULL;
     }
-
-    ///TODO: Ordena fila em ordem decrescente de 'prio'
 
     ///Pega primeiro TCB da fila de aptos
     if (FirstFila2(&ready) == 0)
@@ -216,18 +219,45 @@ int ccreate (void* (*start)(void*), void *arg, int prio)
 int cyield(void)
 {
     AssertIsInitialized();
+
+    /// Calcula o tempo entre essa chamada de funcao
+    /// e o momento que o Scheduler chamou startTimer()
     unsigned int time = stopTimer();
 
+    /// Muda o estado da thread que estava executando
     TCB_t* tcb = cur_tcb;
     tcb->state = PROCST_APTO;
 
     /// Soma-se o ultimo delta do tempo com o tempo total
     tcb->prio += time;
 
-    /// Move para fila de ready
-    if (tcb->tid != 0)
+    /// Insere na fila de ready:
+    /// Precisamos encontrar a posicao correta de acordo com o tempo gasto
+    int conseguiu_inserir = 0;
+    FOR_EACH_FILA2(ready)
     {
-        AppendFila2(&ready, (void*) tcb);
+        TCB_t* thread = (TCB_t*)GetAtIteratorFila2(&ready);
+        /// OBS: A fila esta em ordem descresente de prioridade,
+        /// numeros menores == maior prioridade
+        if (thread->prio > tcb->prio)
+        {
+            /// Encontrou o primeiro thread com prioridade menor, insere antes dele
+            if(InsertBeforeIteratorFila2(&ready, (void *) tcb) != 0)
+            {
+                return -1;
+            }
+            conseguiu_inserir = 1;
+            break;
+        }
+    }
+    if (!conseguiu_inserir)
+    {
+        /// Nao encontrou nenhum thread com uma prioridade maior,
+        /// Entao esse eh o ultimo
+        if(AppendFila2(&ready, (void*) tcb) != 0)
+        {
+            return -1;
+        }
     }
 
     /// Troca para escalonador
