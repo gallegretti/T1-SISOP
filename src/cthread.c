@@ -134,8 +134,44 @@ void AssertIsInitialized()
 
 int GiveMeSomeCoolId()
 {
-    static int cur_tid = 0;
+    /// tid da main eh sempre 0, entao inicia no 1
+    static int cur_tid = 1;
     return cur_tid++;
+}
+
+/// Insere o tcb na fila ready, mantendo a ordem de prioridade
+/// -tcb deve ser um pointeiro valido
+/// -Retorna 0 se conseguiu, -1 se erro
+int InsertTcbInReady(TCB_t* tcb)
+{
+    int conseguiu_inserir = 0;
+    FOR_EACH_FILA2(ready)
+    {
+        TCB_t* thread = (TCB_t*)GetAtIteratorFila2(&ready);
+        /// OBS: A fila esta em ordem descresente de prioridade,
+        /// numeros menores == maior prioridade
+        if (thread->prio >= tcb->prio)
+        {
+            /// Encontrou o primeiro thread com prioridade menor, insere antes dele
+            if(InsertBeforeIteratorFila2(&ready, (void *) tcb) != 0)
+            {
+                return -1;
+            }
+            conseguiu_inserir = 1;
+            break;
+        }
+    }
+    if (!conseguiu_inserir)
+    {
+        /// Nao encontrou nenhum thread com uma prioridade maior,
+        /// Entao esse eh o ultimo
+        if(AppendFila2(&ready, (void*) tcb) != 0)
+        {
+            return -1;
+        }
+    }
+
+    return 0;
 }
 
 /*-------------------------------------------------------*/
@@ -200,7 +236,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio)
         makecontext(&(tcb->context), (void (*)(void)) start, 1, arg);
 
         ///Coloca na fila de aptos
-        if (AppendFila2(&ready, (void*) tcb) == 0)
+        if(InsertTcbInReady(tcb) == 0)
         {
             tcb->state = PROCST_APTO;
             return tcb->tid;
@@ -231,33 +267,10 @@ int cyield(void)
     /// Soma-se o ultimo delta do tempo com o tempo total
     tcb->prio += time;
 
-    /// Insere na fila de ready:
-    /// Precisamos encontrar a posicao correta de acordo com o tempo gasto
-    int conseguiu_inserir = 0;
-    FOR_EACH_FILA2(ready)
+    /// Insere na fila de ready
+    if (InsertTcbInReady(tcb) != 0)
     {
-        TCB_t* thread = (TCB_t*)GetAtIteratorFila2(&ready);
-        /// OBS: A fila esta em ordem descresente de prioridade,
-        /// numeros menores == maior prioridade
-        if (thread->prio > tcb->prio)
-        {
-            /// Encontrou o primeiro thread com prioridade menor, insere antes dele
-            if(InsertBeforeIteratorFila2(&ready, (void *) tcb) != 0)
-            {
-                return -1;
-            }
-            conseguiu_inserir = 1;
-            break;
-        }
-    }
-    if (!conseguiu_inserir)
-    {
-        /// Nao encontrou nenhum thread com uma prioridade maior,
-        /// Entao esse eh o ultimo
-        if(AppendFila2(&ready, (void*) tcb) != 0)
-        {
-            return -1;
-        }
+        return -1;
     }
 
     /// Troca para escalonador
@@ -309,9 +322,9 @@ int csem_init(csem_t *sem, int count)
         /// inicializa o semáfaro
         sem->count = count; /// quantidade de recurso disponível
         sem->fila = malloc(sizeof(FILA2));
-        
+
         int error = CreateFila2(sem->fila); /// inicializa a fila
-        
+
         if (error)
         {
                 printf("error initializing semaphore\n");
@@ -326,30 +339,30 @@ int cwait(csem_t *sem)
 {
 	AssertIsInitialized();
 
-        ///subtrai um dos recursos do semáfaro e continua
-        sem->count --;
-        
-        /// Verifica se o semáfaro tem recursos recursos disponíveis
-        if (sem->count < 0)
-        {
-                /// se não tiver:
+    ///subtrai um dos recursos do semáfaro e continua
+    sem->count--;
 
-                /// Bloqueia essa thread
-                TCB_t* tcb = cur_tcb;
-                tcb->state = PROCST_BLOQ;
-                AppendFila2(&blocked, (void*) tcb);
+    /// Verifica se o semáfaro tem recursos recursos disponíveis
+    if (sem->count < 0)
+    {
+        /// se não tiver:
 
-                /// Coloca na fila do semafaro
-                AppendFila2(sem->fila, (void *) tcb);
+        /// Bloqueia essa thread
+        TCB_t* tcb = cur_tcb;
+        tcb->state = PROCST_BLOQ;
+        AppendFila2(&blocked, (void*) tcb);
 
-                /// Troca para escalonador
-                cur_tcb = NULL;
-                swapcontext(&tcb->context, &scheduler);
+        /// Coloca na fila do semafaro
+        AppendFila2(sem->fila, (void *) tcb);
 
-                return 0;
+        /// Troca para escalonador
+        cur_tcb = NULL;
+        swapcontext(&tcb->context, &scheduler);
 
-        }
-        /// se tiver continua normalmente        
+        return 0;
+
+    }
+    /// se tiver continua normalmente
 
 	return 0;
 }
