@@ -372,7 +372,27 @@ int cwait(csem_t *sem)
 int csignal(csem_t *sem)
 {
     AssertIsInitialized();
-    return -1;
+    sem->count++;
+
+    /// Seguindo a politica FIFO, remove o primeiro
+    FirstFila2(sem->fila);
+    TCB_t* tcb = ((TCB_t*)GetAtIteratorFila2(sem->fila));
+    DeleteAtIteratorFila2(sem->fila);
+
+    /// Remove dos blocked
+    FOR_EACH_FILA2(blocked)
+    {
+        TCB_t* thread = (TCB_t*)GetAtIteratorFila2(&blocked);
+        if (thread->tid == tcb->tid)
+        {
+            DeleteAtIteratorFila2(&blocked);
+        }
+    }
+
+    /// Adiciona nos ready
+    InsertTcbInReady(tcb);
+
+    return 0;
 }
 
 #undef FOR_EACH_FILA2
