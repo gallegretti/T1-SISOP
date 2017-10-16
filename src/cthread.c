@@ -14,7 +14,10 @@
 #include <ucontext.h>
 
 #define MEMSIZE 16*1024
-#define FOR_EACH_FILA2(fila) for (FirstFila2(&fila); fila.it != fila.last; NextFila2(&fila))
+int fila_iterator = 0;
+#define FOR_EACH_FILA2(fila) fila_iterator = 0; for (FirstFila2(&fila); fila.it != fila.last; fila_iterator = NextFila2(&fila))
+//#define FOR_EACH_FILA2(fila) fila_iterator = 0; for (FirstFila2(&fila); fila_iterator != NXTFILA_ENDQUEUE; fila_iterator  = NextFila2(&fila))
+
 /*-------------------------------------------------------*/
 /**----------------------Variaveis----------------------**/
 /*-------------------------------------------------------*/
@@ -374,24 +377,36 @@ int csignal(csem_t *sem)
     AssertIsInitialized();
     sem->count++;
 
-    /// Seguindo a politica FIFO, remove o primeiro
-    FirstFila2(sem->fila);
-    TCB_t* tcb = ((TCB_t*)GetAtIteratorFila2(sem->fila));
-    DeleteAtIteratorFila2(sem->fila);
-
-    /// Remove dos blocked
-    FOR_EACH_FILA2(blocked)
+    /// Verifica se há threads esperando
+    //if (sem->fila->first != NULL)
+    if (FirstFila2(sem->fila) == 0) //cuidado, erros também não retornam zero
     {
-        TCB_t* thread = (TCB_t*)GetAtIteratorFila2(&blocked);
-        if (thread->tid == tcb->tid)
+        /// Se sim, remove a primeira da da blocked e adiciona na ready.
+
+        /// Seguindo a politica FIFO, remove o primeiro
+        //FirstFila2(sem->fila);
+        TCB_t* tcb = ((TCB_t*)GetAtIteratorFila2(sem->fila));
+        DeleteAtIteratorFila2(sem->fila);
+
+        /// Remove dos blocked
+        FOR_EACH_FILA2(blocked)
         {
-            DeleteAtIteratorFila2(&blocked);
+            TCB_t* thread = (TCB_t*)GetAtIteratorFila2(&blocked);
+
+            if (thread->tid == tcb->tid)
+            {
+                DeleteAtIteratorFila2(&blocked);
+                break; //se achou a thread termina de procurar na fila
+            }
         }
+
+        /// Adiciona nos ready
+        InsertTcbInReady(tcb);
     }
 
-    /// Adiciona nos ready
-    InsertTcbInReady(tcb);
+    // Se não, continua normalmente
 
+    
     return 0;
 }
 
