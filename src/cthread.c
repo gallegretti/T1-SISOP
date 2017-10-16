@@ -67,6 +67,7 @@ void Scheduler()
                     {
                         DeleteAtIteratorFila2(&blocked);
                         InsertTcbInReady(tcb);
+                        break;
                     }
                 }
 
