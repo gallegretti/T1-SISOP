@@ -38,7 +38,7 @@ TCB_t * main_tcb;
 TCB_t * cur_tcb;
 ucontext_t scheduler;
 
-
+int InsertTcbInReady(TCB_t* tcb);
 /*-------------------------------------------------------*/
 /**-----------------Funcoes auxiliares------------------**/
 /*-------------------------------------------------------*/
@@ -56,6 +56,7 @@ void Scheduler()
             if (joinable->tid_target == cur_tcb->tid)
             {
                 /// Remove dos joins
+                free(joinable);
                 DeleteAtIteratorFila2(&joins);
 
                 /// Encontra o que que estava bloqueado e muda para ready
@@ -65,7 +66,7 @@ void Scheduler()
                     if (tcb->tid == joinable->tid_source)
                     {
                         DeleteAtIteratorFila2(&blocked);
-                        AppendFila2(&ready, (void *)tcb);
+                        InsertTcbInReady(tcb);
                     }
                 }
 
@@ -73,9 +74,9 @@ void Scheduler()
                 break;
             }
         }
-
-        ///Move TCB para terminados
-        cur_tcb->state = PROCST_TERMINO;
+        /// E desaloca os recursos do thread
+        free(cur_tcb->context.uc_stack.ss_sp);
+        free(cur_tcb);
         cur_tcb = NULL;
     }
 
@@ -144,7 +145,7 @@ int GiveMeSomeCoolId()
 /// -Retorna 0 se conseguiu, -1 se erro
 int InsertTcbInReady(TCB_t* tcb)
 {
-    int conseguiu_inserir = 0;
+    int successful_insert = 0;
     FOR_EACH_FILA2(ready)
     {
         TCB_t* thread = (TCB_t*)GetAtIteratorFila2(&ready);
@@ -157,11 +158,11 @@ int InsertTcbInReady(TCB_t* tcb)
             {
                 return -1;
             }
-            conseguiu_inserir = 1;
+            successful_insert = 1;
             break;
         }
     }
-    if (!conseguiu_inserir)
+    if (!successful_insert)
     {
         /// Nao encontrou nenhum thread com uma prioridade maior,
         /// Entao esse eh o ultimo
