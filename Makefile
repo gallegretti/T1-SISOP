@@ -27,6 +27,10 @@ identifyTest:
 	$(CC) -c -o identify.o $(TST_DIR)/identify.c
 	$(CC) -o $(TST_DIR)/identify.exe identify.o $(BIN_DIR)/cthread.o $(BIN_DIR)/support.o
 
+insertAtBeginningTest:
+	$(CC) -g -c -o insertAtBeginningTest.o $(TST_DIR)/insertAtBeginningTest.c
+	$(CC) -g -o $(TST_DIR)/insertAtBeginningTest.exe insertAtBeginningTest.o $(BIN_DIR)/cthread.o $(BIN_DIR)/support.o
+
 clean:
 	rm -rf $(BIN_DIR)/cthread.o $(LIB_DIR)/libcthread.a
 
