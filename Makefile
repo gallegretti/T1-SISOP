@@ -8,6 +8,8 @@ INC_DIR=./include
 BIN_DIR=./bin
 SRC_DIR=./src
 TST_DIR=./testes
+EG_DIR=./exemplos
+EGE_DIR=./exemplos/executaveis
 
 all: objeto movetoBin gloriousLib movetoLib
 
@@ -23,9 +25,13 @@ gloriousLib:
 movetoLib:
 	mv libcthread.a $(LIB_DIR)
 
+clean:
+	rm -rf $(BIN_DIR)/cthread.o $(LIB_DIR)/libcthread.a
+
 identifyTest:
 	$(CC) -c -o identify.o $(TST_DIR)/identify.c
 	$(CC) -o $(TST_DIR)/identify.exe identify.o $(BIN_DIR)/cthread.o $(BIN_DIR)/support.o
+	mv identify.o $(TST_DIR)
 
 insertAtBeginningTest:
 	$(CC) -g -c -o insertAtBeginningTest.o $(TST_DIR)/insertAtBeginningTest.c
