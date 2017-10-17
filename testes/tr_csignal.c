@@ -12,37 +12,38 @@ csem_t sem;
 void *foo(void *param) {
 
 	int n=(int)param;
-    printf ("\nSou a thread: %d", n);
-    printf ("\nVou solicitar um recurso: %d", n);
+    printf ("Thread %d: Ola mundo\n", n);
+    printf ("Thread %d: Vou solicitar o recurso\n", n);
     cwait(&sem);
-    printf ("\nLiberando processador: %d", n);
+    printf ("Thread %d: Peguei o recurso e vou tirar uma soneca\n", n);
     cyield();
-    printf ("\nRecebi processador de volta, liberando recurso: %d", n);
+    printf ("Thread %d: Acordei, vou liberar o recurso\n", n);
     csignal(&sem);
-    printf ("\nFim execucação da thread: %d", n);
+    printf ("Thread %d: Adeus mundo cruel\n", n);
 	return NULL;
 
 }
 
 int main() {
 
-    int i;
-
     printf("\n************************************\nPrograma Teste da funcao csignal.\n************************************\n");
 
     printf("\nCriando primeira thread");
-    i = ccreate(foo, (void *)1, 0);
-    printf("\nTid gerado: %d", i);
+    int tid1 = ccreate(foo, (void *)1, 0);
+    printf("\nTid gerado: %d", tid1);
 
     printf("\nCriando segunda thread");
-    i = ccreate(foo, (void *)2, 0);
-    printf("\nTid gerado: %d", i);
+    int tid2 = ccreate(foo, (void *)2, 0);
+    printf("\nTid gerado: %d", tid2);
 
     printf("\nChamando csem_init para inicialização do semáforo com count 1");
-    i = csem_init(&sem, 1);
+    int i = csem_init(&sem, 1);
 
-    printf("\nMain liberando processador para as outras threads.");
+    printf("\nMain liberando processador para as outras threads.\n");
     cyield();
+
+    cjoin(tid1);
+    cjoin(tid2);
 
     printf("\nRetornando para a main. Fim.\n");
 
