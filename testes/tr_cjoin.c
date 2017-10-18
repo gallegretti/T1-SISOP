@@ -35,24 +35,23 @@ void *foo(void *param)
 
 int main()
 {
-
-    int i;
-
     printf("\n************************************\nPrograma Teste da funcao cjoin.\n************************************\n");
 
+    printf("->Thread 0: Inicio");
     printf("->Thread 0: Criando Thread 1\n");
     int tid1 = ccreate(foo, (void *)1, 0);
 
     printf("->Thread 0: Criando Thread 2\n");
-    int tid2 = ccreate(foo, (void *)2, 0);
+    ccreate(foo, (void *)2, 0);
 
     printf("->Thread 0: Criando Thread 3\n");
-    int tid3 = ccreate(foo, (void *)3, 0);
+    ccreate(foo, (void *)3, 0);
 
     printf("->Thread 0: Esperando pela Thread 1\n");
-    i = cjoin(tid1);
+    cjoin(tid1);
 
-    printf("Sucesso\n");
+
+    printf("->Thread 0: Fim");
 
     return 0;
 

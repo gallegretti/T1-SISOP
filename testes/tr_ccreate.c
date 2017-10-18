@@ -19,15 +19,13 @@ void *foo(void *param)
 
 int main()
 {
-    int i;
-
     printf("\n************************************\nPrograma Teste da funcao ccreate.\n************************************\n");
     printf("->Thread 0: Inicio\n");
     printf("->Thread 0: Criando Thread 1\n");
-    i = ccreate(foo, (void *)1, 0);
-    if (i == 1)
+    int tid1 = ccreate(foo, (void *)1, 0);
+    if (tid1 == 1)
     {
-        printf("->Thread 0: Tid gerado: %d\n", i);
+        printf("->Thread 0: Tid gerado: %d\n", tid1);
     }
     else
     {
@@ -36,10 +34,10 @@ int main()
 
 
     printf("->Thread 0: Criando Thread 2\n");
-    i = ccreate(foo, (void *)2, 0);
-    if (i == 2)
+    int tid2 = ccreate(foo, (void *)2, 0);
+    if (tid2 == 2)
     {
-        printf("->Thread 0: Tid gerado: %d\n", i);
+        printf("->Thread 0: Tid gerado: %d\n", tid2);
     }
     else
     {
@@ -47,10 +45,10 @@ int main()
     }
 
     printf("->Thread 0: Criando Thread 3\n");
-    i = ccreate(foo, (void *)3, 0);
-    if (i == 3)
+    int tid3 = ccreate(foo, (void *)3, 0);
+    if (tid3 == 3)
     {
-        printf("->Thread 0: Tid gerado: %d\n", i);
+        printf("->Thread 0: Tid gerado: %d\n", tid3);
     }
     else
     {
@@ -58,23 +56,25 @@ int main()
     }
 
     printf("->Thread 0: Criando Thread 4\n");
-    i = ccreate(foo, (void *)4, 0);
-    if (i == 4)
+    int tid4 = ccreate(foo, (void *)4, 0);
+    if (tid4 == 4)
     {
-        printf("->Thread 0: Tid gerado: %d\n", i);
+        printf("->Thread 0: Tid gerado: %d\n", tid4);
     }
     else
     {
         printf("Falha, id errado");
     }
 
-    printf("->Thread 0: Esperando pelas outras threads\n");
-    cjoin(1);
-    cjoin(2);
-    cjoin(3);
-    cjoin(4);
+    printf("->Thread 0: Esperando pela thread 1\n");
+    cjoin(tid1);
+    printf("->Thread 0: Esperando pela thread 2\n");
+    cjoin(tid2);
+    printf("->Thread 0: Esperando pela thread 3\n");
+    cjoin(tid3);
+    printf("->Thread 0: Esperando pela thread 4\n");
+    cjoin(tid4);
     printf("->Thread 0: Fim");
-    printf("Sucesso");
 
     return 0;
 

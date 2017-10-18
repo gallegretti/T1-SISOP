@@ -42,7 +42,7 @@ int main()
     if (i != 0)
     {
         printf("Falha! inicializacao do semaforo retornou != 0\n");
-        return;
+        return 0;
     }
     int tid1 = ccreate(foo, (void *)1, 0);
     if (tid1 < 0)

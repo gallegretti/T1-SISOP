@@ -22,7 +22,6 @@ void *foo(void *param)
 int main()
 {
     printf("->Thread 0: Inicio\n");
-    int i;
 
     printf("\n************************************\nPrograma Teste da funcao cwait.\n************************************\n");
 

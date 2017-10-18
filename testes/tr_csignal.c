@@ -36,7 +36,7 @@ int main() {
     int tid2 = ccreate(foo, (void *)2, 0);
 
     printf("->Thread 0: Criando Semaforo\n");
-    int i = csem_init(&sem, 1);
+    csem_init(&sem, 1);
 
     printf("->Thread 0: Libera CPU\n");
     cyield();
