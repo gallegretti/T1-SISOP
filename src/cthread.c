@@ -14,18 +14,22 @@
 #include <ucontext.h>
 
 #define MEMSIZE 16*1024
-int fila_iterator = 0;
-#define FOR_EACH_FILA2(fila) fila_iterator = 0; for (FirstFila2(&fila); fila.it != fila.last; fila_iterator = NextFila2(&fila))
-//#define FOR_EACH_FILA2(fila) fila_iterator = 0; for (FirstFila2(&fila); fila_iterator != NXTFILA_ENDQUEUE; fila_iterator  = NextFila2(&fila))
 
+/// Helper para iterar sobre as listas do suport
+
+int _filafirst = 0;
+int _filanext = 0;
+#define FOR_EACH_FILA2(fila) \
+for (_filafirst = FirstFila2(&fila), _filanext = 0; ((_filafirst == 0) && (_filanext == 0)); _filanext = NextFila2(&fila))
+
+
+#define LOG(message, args...) printf("Scheduler: " message "\n", ## args)
 /*-------------------------------------------------------*/
 /**----------------------Variaveis----------------------**/
 /*-------------------------------------------------------*/
 
 char long_names[77] = "Diego Migotto - 242243\nGabriel Allegretti - 242269\nLucas Corssac - 219820\n";
 char short_names[49] = "DDasso242243\nGAllegretti242269\nLCorssac219820\n";
-
-int va_setup = 0;
 
 /// Vamos manter essa fila ordenada de maneira DECRESCENTE de prioridade, ou seja,
 /// as thread com prioridades de valor numerico MENOR estarao no inicio da lista,
@@ -48,9 +52,9 @@ int InsertTcbInReady(TCB_t* tcb);
 
 void Scheduler()
 {
-    ///Caso o thread tenha terminado
     if (cur_tcb != NULL)
     {
+        LOG("Fim do Thread %d", cur_tcb->tid);
         ///Vamos remover da lista de joins caso alguem esteja esperando por ele
         FOR_EACH_FILA2(joins)
         {
@@ -58,14 +62,13 @@ void Scheduler()
             /// Se encontrou
             if (joinable->tid_target == cur_tcb->tid)
             {
-                /// Remove dos joins
-                free(joinable);
                 DeleteAtIteratorFila2(&joins);
 
                 /// Encontra o que que estava bloqueado e muda para ready
                 FOR_EACH_FILA2(blocked)
                 {
                     TCB_t* tcb = (TCB_t*)GetAtIteratorFila2(&blocked);
+                    LOG("Desbloqueando Thread %d", joinable->tid_source);
                     if (tcb->tid == joinable->tid_source)
                     {
                         DeleteAtIteratorFila2(&blocked);
@@ -73,6 +76,8 @@ void Scheduler()
                         break;
                     }
                 }
+                /// Nao precisamos mais desse joinable
+                free(joinable);
 
                 /// Como um thread pode ser 'joinado' por apenas um outro thread, podemos terminar
                 break;
@@ -88,6 +93,7 @@ void Scheduler()
     if (FirstFila2(&ready) == 0)
     {
         cur_tcb = GetAtIteratorFila2(&ready);
+        LOG("Alterando contexto para Thread %d", cur_tcb->tid);
         DeleteAtIteratorFila2(&ready);
     }
     else
@@ -104,10 +110,12 @@ void Scheduler()
 
 void AssertIsInitialized()
 {
+    static int va_setup = 0;
     if (va_setup == 1)
     {
         return;
     }
+    LOG("Inicializando");
     ///Criar filas de apto e bloqueado
     CreateFila2(&ready);
     CreateFila2(&blocked);
@@ -289,7 +297,7 @@ int cjoin(int tid)
 {
     AssertIsInitialized();
 
-     /// Calcula o tempo entre essa chamada de funcao
+    /// Calcula o tempo entre essa chamada de funcao
     /// e o momento que o Scheduler chamou startTimer()
     unsigned int time = stopTimer();
 
@@ -307,7 +315,12 @@ int cjoin(int tid)
     s_JOINABLE* joinable = (s_JOINABLE*) malloc(sizeof(s_JOINABLE));
     joinable->tid_source = cur_tcb->tid;
     joinable->tid_target = tid;
-    AppendFila2(&joins, (void*) joinable);
+
+    if (AppendFila2(&joins, (void*) joinable) != 0)
+    {
+        LOG("Erro ao adicionar join na lista");
+        return -1;
+    }
 
 
     /// Bloqueia essa thread
@@ -331,7 +344,6 @@ int csem_init(csem_t *sem, int count)
 {
     AssertIsInitialized();
 
-
     /// inicializa o semáfaro
     sem->count = count; /// quantidade de recurso disponível
     sem->fila = malloc(sizeof(FILA2));
@@ -340,10 +352,9 @@ int csem_init(csem_t *sem, int count)
 
     if (error)
     {
-        printf("error initializing semaphore\n");
+        LOG("Error initializing semaphore");
         return -1;
     }
-
 
     return 0;
 }
@@ -394,13 +405,11 @@ int csignal(csem_t *sem)
     sem->count++;
 
     /// Verifica se há threads esperando
-    //if (sem->fila->first != NULL)
     if (FirstFila2(sem->fila) == 0) //cuidado, erros também não retornam zero
     {
         /// Se sim, remove a primeira da da blocked e adiciona na ready.
 
         /// Seguindo a politica FIFO, remove o primeiro
-        //FirstFila2(sem->fila);
         TCB_t* tcb = ((TCB_t*)GetAtIteratorFila2(sem->fila));
         DeleteAtIteratorFila2(sem->fila);
 
@@ -412,7 +421,7 @@ int csignal(csem_t *sem)
             if (thread->tid == tcb->tid)
             {
                 DeleteAtIteratorFila2(&blocked);
-                break; //se achou a thread termina de procurar na fila
+                break; /// Se achou a thread termina de procurar na fila
             }
         }
 
@@ -420,9 +429,9 @@ int csignal(csem_t *sem)
         InsertTcbInReady(tcb);
     }
 
-    // Se não, continua normalmente
+    /// Se não, continua normalmente
 
-    
+
     return 0;
 }
 
