@@ -319,6 +319,35 @@ int cjoin(int tid)
         }
     }
 
+    /// Aviso se o nao existe um thread com esse tid ou esse thread ja terminou
+    int found = 0;
+    FOR_EACH_FILA2(ready)
+    {
+        TCB_t* thread = (TCB_t*)GetAtIteratorFila2(&ready);
+        if (thread->tid == tid)
+        {
+            found = 1;
+            break;
+        }
+    }
+    if (!found)
+    {
+        FOR_EACH_FILA2(blocked)
+        {
+            TCB_t* thread = (TCB_t*)GetAtIteratorFila2(&blocked);
+            if (thread->tid == tid)
+            {
+                found = 1;
+                break;
+            }
+        }
+    }
+    if (!found)
+    {
+        LOG("Aviso: Thread com tid %d nao existe ou ja terminou", tid);
+        return -1;
+    }
+
     /// Adiciona o join na lista
     s_JOINABLE* joinable = (s_JOINABLE*) malloc(sizeof(s_JOINABLE));
     joinable->tid_source = cur_tcb->tid;
