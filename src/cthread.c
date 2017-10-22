@@ -9,7 +9,7 @@
 #include "../include/cthread.h"
 #include "../include/support.h"
 #include "../include/cdata.h"
-#include <stdio.h>
+
 #include <stdlib.h>
 #include <ucontext.h>
 
@@ -22,8 +22,15 @@ int _filanext = 0;
 #define FOR_EACH_FILA2(fila) \
 for (_filafirst = FirstFila2(&fila), _filanext = 0; ((_filafirst == 0) && (_filanext == 0)); _filanext = NextFila2(&fila))
 
+/// Logger apenas quando for compilado com -D DEBUG
 
-#define LOG(message, args...) printf("Scheduler: " message "\n", ## args)
+#ifdef DEBUG
+    #include <stdio.h>
+    #define LOG(message, args...) printf("Scheduler: " message "\n", ## args)
+#else
+    #define LOG(message, args...)
+#endif
+
 /*-------------------------------------------------------*/
 /**----------------------Variaveis----------------------**/
 /*-------------------------------------------------------*/
@@ -307,6 +314,7 @@ int cjoin(int tid)
         s_JOINABLE* joinable = (s_JOINABLE*)GetAtIteratorFila2(&joins);
         if (joinable->tid_target == tid)
         {
+            LOG("Erro: Thread %d ja esta esperando pela thread %d", joinable->tid_source, tid);
             return -1;
         }
     }
