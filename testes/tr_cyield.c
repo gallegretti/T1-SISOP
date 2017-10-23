@@ -48,7 +48,7 @@ int main()
     cjoin(tid2);
     printf("->Thread 0: Esperando Thread 3\n");
     cjoin(tid3);
-    printf("->Thread 0: Fim");
+    printf("->Thread 0: Fim\n");
 
     return 0;
 }

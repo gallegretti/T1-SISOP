@@ -74,7 +74,7 @@ int main()
     cjoin(tid3);
     printf("->Thread 0: Esperando pela thread 4\n");
     cjoin(tid4);
-    printf("->Thread 0: Fim");
+    printf("->Thread 0: Fim\n");
 
     return 0;
 

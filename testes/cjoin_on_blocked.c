@@ -80,7 +80,7 @@ int main()
         printf("Falha! cjoin retornou um erro\n");
     }
 
-    printf("->Thread 0: Fim");
+    printf("->Thread 0: Fim\n");
 
     return 0;
 }
