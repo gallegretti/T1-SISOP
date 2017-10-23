@@ -304,10 +304,6 @@ int cjoin(int tid)
 {
     AssertIsInitialized();
 
-    /// Calcula o tempo entre essa chamada de funcao
-    /// e o momento que o Scheduler chamou startTimer()
-    unsigned int time = stopTimer();
-
     /// Erro se alguem já está esperando por essa thread
     FOR_EACH_FILA2(joins)
     {
@@ -359,13 +355,13 @@ int cjoin(int tid)
         return -1;
     }
 
-
     /// Bloqueia essa thread
     TCB_t* tcb = cur_tcb;
     tcb->state = PROCST_BLOQ;
 
     /// Soma-se o ultimo delta do tempo com o tempo total
-    tcb->prio += time;
+    /// Importante apenas parar o timer quando tivermos certeza que essa funcao nao vai falhar
+    tcb->prio += stopTimer();
 
     AppendFila2(&blocked, (void*) tcb);
 
@@ -389,7 +385,7 @@ int csem_init(csem_t *sem, int count)
 
     if (error)
     {
-        LOG("Error initializing semaphore");
+        LOG("Error ao iniciar o semaforo");
         return -1;
     }
 
@@ -399,10 +395,6 @@ int csem_init(csem_t *sem, int count)
 int cwait(csem_t *sem)
 {
     AssertIsInitialized();
-
-    /// Calcula o tempo entre essa chamada de funcao
-    /// e o momento que o Scheduler chamou startTimer()
-    unsigned int time = stopTimer();
 
     ///subtrai um dos recursos do semáfaro e continua
     sem->count--;
@@ -417,7 +409,8 @@ int cwait(csem_t *sem)
         tcb->state = PROCST_BLOQ;
 
         /// Soma-se o ultimo delta do tempo com o tempo total
-        tcb->prio += time;
+        /// Somente paramos o timer quando soubermos que esse thread vai bloquear
+        tcb->prio += stopTimer();
 
         AppendFila2(&blocked, (void*) tcb);
 
