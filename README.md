@@ -12,18 +12,18 @@
 - [x] Relatório #1
 - [X] Relatório #2 
 - [X] Relatório #3
-- [ ] Relatório #4
-- [ ] Relatório #5
+- [X] Relatório #4
+- [X] Relatório #5
 - [X] Func Inicialização
 - [X] Ccreate
 - [X] Cyield
-- [ ] Cjoin
-- [ ] Csem_init
-- [ ] Cwait
-- [ ] Csignal
+- [X] Cjoin
+- [X] Csem_init
+- [X] Cwait
+- [X] Csignal
 - [X] Cidentify
-- [ ] Debugging
-- [ ] Testes
+- [X] Debugging
+- [X] Testes
 
 
 ## README
